@@ -18,10 +18,14 @@ class SqlClass {
         this.columns = columns;
         this.tableName = tableName;
 
+        // 鎖定成員防止覆寫(overwrite)
+        Object.freeze(this.db);
+        Object.freeze(this.columns);
+        Object.freeze(this.tableName);
+
         this.db.serialize(() => {
           this.create();
-        });
-        
+        });      
     }
 
     close() {
@@ -96,6 +100,27 @@ class SqlClass {
       const sql = `SELECT * FROM \`${this.tableName}\`;`;
       return this.all(sql);
     }
+
+    save() {
+      const sqlObj = [];
+      let sql = `INSERT INTO \`${this.tableName}\` (`;
+      let values = '(';
+      for(let key in this.columns) {
+        if(this[key]) {
+          sqlObj.push(this[key]);
+          delete this[key];
+          sql += key + ', ';
+          values += '?, '
+        }
+      }
+      values = values.substring(0, values.length - 2) + ')';
+      sql = sql.substring(0, sql.length - 2) + ') VALUES ' + values;
+      if (sqlObj.length === 0) {
+        return Promise.reject({error: 'no valid column add'});
+      }
+      return this.run(sql, sqlObj);
+    }
+
     // 新增或修改使用run方法執行指令
     run(sql, params = []) {
       // promise特性改善js非同步特性的問題，可以在任務完成後自動調用回調函式(callback)，並且統一回調函式(callback)名稱，方便擴展與串接
@@ -111,7 +136,7 @@ class SqlClass {
             reject(_err)
           } else {
             // 在promise的then emit 新增或修改的索引值
-            resolve({ id: this.lastID })
+            resolve({ id: this.lastID , change: this.changes })
           }
         })
       })
