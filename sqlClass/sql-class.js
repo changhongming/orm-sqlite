@@ -5,14 +5,11 @@ class SqlClass {
     // 建構子(傳入資料庫目錄名稱)
     constructor(dbFilePath, tableName, columns) {
         if(tableName === undefined || columns === undefined) 
-          return console.log('Please input table name and columns');
+          throw new Error('Please input table name and columns');
 
         this.db = new sqlite3.Database(dbFilePath, (err) => {
-            if (err) {
-                console.log('Could not connect to database:', err);
-            } else {
-                console.log('Connected to database');
-            }
+            if (err) 
+              throw new Error('Could not connect to database:', err);
         });
         
         this.columns = columns;
@@ -24,8 +21,8 @@ class SqlClass {
         Object.freeze(this.tableName);
 
         this.db.serialize(() => {
-          this.create();
-        });      
+          this.create().catch(err => {throw new Error('Create Table Error', err)});
+        });
     }
 
     close() {
@@ -36,13 +33,26 @@ class SqlClass {
         if(typeof data !== 'object') return new Promise((resolve, reject) => {reject('Add data not a object')});
         let addColumns = '';
         let addData = '';
-        for(let key in data) {
-          if(this.columns[key] !== undefined) {
+        // for(let key in data) {
+        //   if(this.columns[key] !== undefined) {
+        //     const val = data[key];
+        //     addColumns += `\`${key}\`, `;
+        //     addData += typeof val === 'number' ? `${val}, ` : `'${val}', `;
+        //   }
+        // }
+        //const key = Object.keys(this.columns);
+        Object.keys(this.columns).map(key => {
+          if(data[key] !== undefined) {
             const val = data[key];
             addColumns += `\`${key}\`, `;
-            addData += typeof val === 'number' ? `${val}, ` : `'${val}', `
+            addData += typeof val === 'number' ? `${val}, ` : `'${val}', `;
           }
-        }
+          else if(typeof this.columns[key].defaultValue === 'function') {
+            addColumns += `\`${key}\`, `;
+            const val = this.columns[key].defaultValue();
+            addData += typeof val === 'number' ? `${val}, ` : `'${val}', `;
+          }
+        })
           addColumns = addColumns.substring(0, addColumns.length -2);
           addData = addData.substring(0, addData.length -2);
           const sql = `INSERT INTO \`${this.tableName}\` (${addColumns}) VALUES (${addData})`;
@@ -109,6 +119,11 @@ class SqlClass {
         if(this[key]) {
           sqlObj.push(this[key]);
           delete this[key];
+          sql += key + ', ';
+          values += '?, '
+        }
+        else if(typeof this.columns[key].defaultValue === 'function') {
+          sqlObj.push(this.columns[key].defaultValue())
           sql += key + ', ';
           values += '?, '
         }
