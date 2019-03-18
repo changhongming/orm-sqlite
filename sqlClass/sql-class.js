@@ -7,21 +7,44 @@ class SqlClass {
     if (tableName === undefined || columns === undefined)
       throw new Error('Please input table name and columns');
 
-    this.db = new sqlite3.Database(dbFilePath, (err) => {
+      this._config = {
+        dbFilePath,
+        columns,
+        tableName,
+        db: {}
+      }
+
+    this._config.db = new sqlite3.Database(dbFilePath, (err) => {
       if (err)
         throw new Error('Could not connect to database:', err);
     });
 
-    this.columns = columns;
-    this.tableName = tableName;
-
-    // 鎖定成員防止覆寫(overwrite)
-    Object.freeze(this.db);
-    Object.freeze(this.columns);
-    Object.freeze(this.tableName);
+    Object.freeze(this._config);
 
     this.db.serialize(() => {
-      this.create().catch(err => { throw new Error('Create Table Error', err) });
+      this.create().catch(err => { throw new Error(err.sql) });
+    });
+  }
+
+  get tableName() {
+    return this._config.tableName;
+  }
+
+  get columns() {
+    return this._config.columns;
+  }
+
+  get db() {
+    return this._config.db;
+  }
+  
+  connect() {
+    return new Promise((resolve, reject) => {
+    this.db = new sqlite3.Database(this.dbFilePath, (err) => {
+        if (err)
+          reject(new Error('Could not connect to database:', err));
+        resolve();
+      });
     });
   }
 
@@ -205,6 +228,10 @@ class SqlClass {
     str = str.substring(0, str.length - 2);
     const sql = `CREATE TABLE ${tryExist ? 'IF NOT EXISTS' : ''} \`${this.tableName}\` (${str})`;
     return this.run(sql);
+  }
+  
+  drop() {
+    return this.run(`DROP TABLE ${this.tableName}`);
   }
 }
 
