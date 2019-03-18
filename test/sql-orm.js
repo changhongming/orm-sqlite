@@ -20,7 +20,7 @@ describe('# 測試sql-class建構子及類別成員', () => {
   it('測試建構子', () => {
     assert.equal(sqlClass.tableName, tableName);
     assert.equal(sqlClass.columns, columns);
-    assert.notDeepEqual(sqlClass.db, new sqlite.Database(':memory:'))
+    assert.equal(typeof sqlClass.db, 'object')
   })
 
   it('嘗試修改類別成員db內容(通過代表不能修改)', () => {
