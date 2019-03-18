@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/changhongming/orm-sqlite.svg?branch=master)](https://travis-ci.org/changhongming/orm-sqlite)
+
 # API說明
 在建構時第一個參數為表名；第二個為欄位資訊。
  - 欄位資訊定義了欄位名稱，內部再定義型別與修飾字的設定，以下為一個例子
