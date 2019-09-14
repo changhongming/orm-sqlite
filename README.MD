@@ -5,7 +5,7 @@
  - 欄位資訊定義了欄位名稱，內部再定義型別與修飾字的設定，以下為一個例子
 
 
-```
+```javascript
 const member = new Model('my-table-name',
 {
   id: {type: Model.INTERGER, pk:true, ai:true},
@@ -17,7 +17,7 @@ const member = new Model('my-table-name',
 ```
 ------
 接下來的會以以下這個結構作為範例：
-```
+```javascript
 const Model = require('./sqlClass/model');
 
 const member = new Model('member',
@@ -27,9 +27,9 @@ const member = new Model('member',
   number: {type: Model.INTERGER, defaultValue: -1}
 });
 ```
-## 1. ```add( <addObj> )```
+## 1. `add( <addObj> )`
 新增一筆資料到資料庫，```<addObj>```為要新增的物件。
-```
+```javascript
 member.add({number:22, name:'hello'})
 .then(data => console.log(data))
 .catch(err => console.log(err));
@@ -39,9 +39,9 @@ member.add({number:22, name:'hello'})
 -----
 
 
-## 2. ```delete( <deletWhere> )```
-刪除資料庫內符合物件，```<deleteWhere>```為要刪除的物件位置。
-```
+## 2. `delete( <deletWhere> )`
+刪除資料庫內符合物件，`<deleteWhere>`為要刪除的物件位置。
+```javascript
 member.delete({id:1})
 .then(data => console.log(data))
 .catch(err => console.log(err));
@@ -51,9 +51,9 @@ member.delete({id:1})
 -----
 
 
-## 3. ```update( <updateObj> , <updateWhere> )```
-更新資料庫內符合的物件，```<updateObj>```為要更新的物件值；```<updateWhere>```為要更新的物件位置。
-```
+## 3. `update( <updateObj> , <updateWhere> )`
+更新資料庫內符合的物件，`<updateObj>`為要更新的物件值；`<updateWhere>`為要更新的物件位置。
+```javascript
 update({name: 'updateValue', number: 999}, {id: 1})
 .then(data => console.log(data))
 .catch(err => console.log(err));
@@ -63,9 +63,9 @@ update({name: 'updateValue', number: 999}, {id: 1})
 -----
 
 
-## 4. ```save()```
-可以使用```save()```取代```add(<addObj>)```功能，只要依序在你的```model```內逐一定義數值即可。
-```
+## 4. `save()`
+可以使用`save()`取代`add(<addObj>)`功能，只要依序在你的`model`內逐一定義數值即可。
+```javascript
 member.name = 'Kevin';
 member.errorCol = 'dsadas';
 member.number = 33;
@@ -73,13 +73,13 @@ member.save()
 .then(data => {console.log(data)})
 .catch(err => console.log(err));
 ```
-**注意**：使用此方法新增請避免使用```db```、```columns```、```tableName```名稱 
+**注意**：使用此方法新增請避免使用`db`、`columns`、`tableName`名稱 
 
 
 -----
-## 5. ```findOne( <findWhere> )```
-找尋第一筆符合的資料，```<findWhere>```為需要找尋的物件。
-```
+## 5. `findOne( <findWhere> )`
+找尋第一筆符合的資料，`<findWhere>`為需要找尋的物件。
+```javascript
 member.findOne({name: 'default', id:5})
 .then(data => {console.log(data)})
 .catch(err => console.log(err));
@@ -87,16 +87,16 @@ member.findOne({name: 'default', id:5})
 
 -----
 
-## 6. ```findAll()```
-回傳整個```model```的內容。
-```
+## 6. `findAll()`
+回傳整個`model`的內容。
+```javascript
 member.findAll()
 .then(data => {console.log(data)})
 .catch(err => console.log(err));
 ```
 ## 7. 型別說明
 型別部分可以使用字串傳入或是使用定義的列舉傳入。
-```
+```javascript
 model.INTERGER = 'INTEGER';
 
 model.TEXT = 'TEXT';
@@ -112,7 +112,7 @@ model.REAL = 'REAL';
 - 預設值說明
 
   預設值可使用函示作為傳入值(注意：這將不會在創表時註冊在預設值當中，而是在每次新增時插入)
-  ```
+  ```javascript
   dateTime: { type: Model.DATETIME, defaultValue: () => Math.floor(Date.now() / 1000) },
   index: { type: Model.INTERGER, defaultValue: () => this.index + 1 }
   ```
@@ -129,7 +129,7 @@ model.REAL = 'REAL';
 # 同步流程控制
  - 使用async/await
 
- ```
+ ```javascript
 (async () => {
   try{
     await member.add({name:'hello'});
@@ -149,7 +149,7 @@ model.REAL = 'REAL';
 
 - 使用Promise
 
-```
+```javascript
 member.add({name:'newdata'})
 .then(data => member.findAll())
 .then(data => console.log(data))
